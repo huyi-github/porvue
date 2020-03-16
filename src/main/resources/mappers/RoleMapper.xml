@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huyi.porvue.mapper.RoleMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huyi.porvue.entity.Role">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="nameZh" property="nameZh" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, nameZh
+    </sql>
+
+    <resultMap id="voMap" type="com.huyi.porvue.entity.RoleVo" extends="BaseResultMap">
+        <result column="mids" property="mids" />
+        <result column="mnames" property="mnames" />
+    </resultMap>
+
+    <select id="selectPageVo" resultMap="voMap" >
+        SELECT
+        a.*,
+        GROUP_CONCAT(c.id) mids,
+        GROUP_CONCAT(c.`name`)mnames
+        FROM
+        role a
+        LEFT JOIN menu_role b ON a.id = b.rid
+        LEFT JOIN menu c ON b.mid = c.id
+        <where>
+            <if test="roleVo!=null">
+                <if test="roleVo.nameZh!='' and roleVo.nameZh!=null">
+                    and a.nameZh like concat('%',#{roleVo.nameZh},'%')
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        a.id
+    </select>
+
+</mapper>

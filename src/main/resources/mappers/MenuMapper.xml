@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huyi.porvue.mapper.MenuMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huyi.porvue.entity.Menu">
+        <id column="id" property="id" />
+        <result column="url" property="url" />
+        <result column="path" property="path" />
+        <result column="component" property="component" />
+        <result column="name" property="name" />
+        <result column="iconCls" property="iconCls" />
+        <result column="keepAlive" property="keepAlive" />
+        <result column="requireAuth" property="requireAuth" />
+        <result column="parentId" property="parentId" />
+        <result column="enabled" property="enabled" />
+        <result column="create_time" property="createTime" />
+        <collection property="menus" ofType="com.huyi.porvue.entity.Menu">
+            <id column="id1" property="id"/>
+            <result column="url1" property="url" />
+            <result column="path1" property="path" />
+            <result column="component1" property="component" />
+            <result column="name1" property="name" />
+        </collection>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, url, path, component, name, iconCls, keepAlive, requireAuth, parentId, enabled, create_time
+    </sql>
+
+    <select id="listMenus" resultMap="BaseResultMap">
+            SELECT
+        m1.*, m2.id id1,
+        m2.url url1,
+        m2.path path1,
+        m2.component component1,
+        m2.`name` name1
+        FROM
+        menu m1
+        LEFT JOIN menu m2 ON m1.id = m2.parentId
+        WHERE
+        m1.parentId = 1
+    </select>
+
+    <select id="listByUserName" resultMap="BaseResultMap">
+           SELECT
+	a.*, b.id id1,
+	b.url url1,
+	b.path path1,
+	b.component component1,
+	b. NAME name1
+FROM
+	menu a
+LEFT JOIN menu b ON a.id = b.parentId
+WHERE
+	a.parentId = 1
+AND b.id IN (
+	SELECT
+	mr.mid
+FROM
+	USER u
+LEFT JOIN user_role ur ON u.id = ur.uid
+LEFT JOIN menu_role mr ON ur.rid = mr.rid
+WHERE
+	u.username = #{userName}
+)
+    </select>
+
+</mapper>

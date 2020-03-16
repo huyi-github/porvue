@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.huyi.porvue.mapper.ProductMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.huyi.porvue.entity.Product">
+        <id column="id" property="id" />
+        <result column="name" property="name" />
+        <result column="picture" property="picture" />
+        <result column="price" property="price" />
+        <result column="place" property="place" />
+        <result column="province" property="province" />
+        <result column="city" property="city" />
+        <result column="district" property="district" />
+
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, name, picture, price, place,province,city,district
+    </sql>
+
+    <resultMap id="voMap" type="com.huyi.porvue.entity.ProductVo" extends="BaseResultMap">
+        <result property="provinceName" column="provinceName"></result>
+        <result property="cityName" column="cityName"></result>
+        <result property="districtName" column="districtName"></result>
+        <result property="rids" column="rids"></result>
+        <result property="rnames" column="rnames"></result>
+        <result column="price1" property="price1" />
+        <result column="price2" property="price2" />
+    </resultMap>
+
+    <select id="selectPageVo" resultMap="voMap">
+                SELECT
+            a.*, b.province provinceName,
+
+        IF (
+            c.city = '',
+            b.province,
+            c.city
+        ) cityName,
+
+        IF (
+            d.district = '',
+            c.city,
+            d.district
+        ) districtName,
+         GROUP_CONCAT(f.id) rids,
+         GROUP_CONCAT(f.`name`) rnames
+        FROM
+            product a
+        LEFT JOIN nation b ON a.province = b.id
+        LEFT JOIN nation c ON a.city = c.id
+        LEFT JOIN nation d ON a.district = d.id
+        LEFT JOIN product_middle e ON a.id = e.pid
+        LEFT JOIN promotion f ON e.tid = f.id
+        <where>
+            <if test="vo!=null">
+                <if test="vo.name!='' and vo.name!=null">
+                    and a.name like concat('%',#{vo.name},'%')
+                </if>
+                <if test="vo.price1!='' and vo.price1!=null">
+                    and a.price >= #{vo.price1}
+                </if>
+                <if test="vo.price2!='' and vo.price2!=null">
+                    and a.price &lt;= #{vo.price2}
+                </if>
+            </if>
+        </where>
+        GROUP BY a.id
+    </select>
+</mapper>
